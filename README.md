@@ -24,8 +24,6 @@ CMAKE_CUDA_ARCHITECTURES=86-real ./scripts/build-cuda.sh     # 改成本机架�
 
 产物在 `build/bin/llama-kvmem-server`。启动参数见第五节。
 
-> 不想编译就用[预编译包](https://github.com/kvmem/kvmem-llama.cpp/releases)（Windows rc3 有 CUDA 13.2 / 12.9 两个版本）。
-
 ---
 
 ## 二、用 AI Agent 一键编译部署
