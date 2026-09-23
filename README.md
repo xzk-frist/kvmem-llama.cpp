@@ -531,3 +531,33 @@ Copy the BibTeX entry below and cite it with `\cite{chai2026kvmem}`.
   url           = {https://arxiv.org/abs/2609.04852}
 }
 ```
+
+
+## Build and deploy with an AI agent
+
+`docs/agent-build-and-deploy.md` is a runbook written to be handed to a coding
+agent: probe the machine, pick the right CUDA architecture, apply the patches,
+build, size the GPU KV pool and then **verify with a real request** before
+claiming success. It states pass criteria at each step, because the expensive
+failures here are silent ones.
+
+Give an agent this line and it has everything it needs:
+
+```text
+Read docs/agent-build-and-deploy.md and follow it end to end on this machine.
+Probe the environment first and show me the table before building. Set
+CMAKE_CUDA_ARCHITECTURES from the detected GPU (never the default), require
+nvcc >= 13.2.86, and do not report success on a health check - send one real
+completion request and read the output.
+```
+
+The three points it spends the most words on, because they cost the most time:
+
+1. **Wrong CUDA architecture or toolkit** - builds fine, then produces garbage or
+   faults. Read `nvcc --version`, not `nvidia-smi`.
+2. **Idle VRAM lies** - staging buffers appear only under load, so a comfortable
+   idle reading can still die with `KVMEM stagein q scratch: out of memory` on
+   the first request. Verify with a real request; recovery is to lower
+   `--kvmem-budget`, then `-ub`.
+3. **`--kvmem-gen-reserve` bounds a single generation** - exceed it and the whole
+   round is discarded.
